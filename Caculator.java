@@ -17,6 +17,7 @@ public class Caculator{
 	static boolean [] Debug = {true, true, true, true, true, true};
 	//                 toDouble^ Caculate num1^ num2^ main^ SymScan
 	public static String sums;
+	static StringBuffer Nsums = new StringBuffer(sums);
 	static int mem, sc2 = 0;
 	static double result;
 	static double toDouble(String tra1, int a, int b){
@@ -60,6 +61,39 @@ public class Caculator{
 			return result;
 		}
 	}
+	static int [] BraScan(){
+
+		int start = 0, end = -1;
+		int [] result = new int[2];
+		if(sums.indexOf("(") == -1) {
+			result[0] = -1;
+			return result;
+		}
+		boolean loop = false;
+		StringBuffer sumsB = new StringBuffer(sums);
+		do{
+			start = sumsB.substring(start).indexOf("(");
+			if(sumsB.substring(start).indexOf("(") < sumsB.substring(start).indexOf(")")){
+				start = sumsB.substring(start).indexOf("(") + 1;
+				end = sumsB.substring(start).indexOf(")");
+				loop = true;
+			}else {
+				end = sums.substring(start).indexOf(")");
+				Nsums = new StringBuffer(sums.substring(start, end));
+				if(SymScan(0, Nsums.length()) == -1) {
+					result[0] = start;
+					result[1] = end;
+					return result;
+				}else {
+					start = end + 1;
+					loop = true;
+				}
+			}
+		}while(loop);
+		result[0] = start;
+		result[1] = end;
+		return result;
+	}
 	static double Caculate(){
 		double result = 0;
 		switch(sums.charAt(mem)){
@@ -82,7 +116,7 @@ public class Caculator{
 	}
 	static double num1(){
 		sc1 = "0";
-		int a = 0, num1S = 0, num1E = mem;
+		int num1S = 0, num1E = mem;
 		double result = 0;
 		/*
 		if(sums.substring(a, b).indexOf('+') != -1)
@@ -159,19 +193,20 @@ public class Caculator{
 		do{
 			loop = false;
 			if(Debug[5] == true) System.out.println("SymScan():Start scanning from " + a + " to " + b);
-			if(sums.substring(a, b).indexOf('+') != -1)
-				result = sums.substring(a, b).indexOf('+');
-			else if(sums.substring(a, b).indexOf('-') != -1)
-				result = sums.substring(a, b).indexOf('-');
-			else if(sums.substring(a, b).indexOf('*') != -1)
-				result = sums.substring(a, b).indexOf('*');
-			else if(sums.substring(a, b).indexOf('/') != -1)
-				result = sums.substring(a, b).indexOf('/');
+			if(Nsums.substring(a, b).indexOf('*') != -1)
+				result = Nsums.substring(a, b).indexOf('*');
+			else if(Nsums.substring(a, b).indexOf('/') != -1)
+				result = Nsums.substring(a, b).indexOf('/');
+			else if(Nsums.substring(a, b).indexOf('+') != -1)
+				result = Nsums.substring(a, b).indexOf('+');
+			else if(Nsums.substring(a, b).indexOf('-') != -1)
+				result = Nsums.substring(a, b).indexOf('-');
+			else return result;
 			if(result == 0){
 				a = result + 1;
 				loop = true;
 				if(Debug[5] == true) System.out.println("SymScan():Negative found at " + result + ", loop");
-			}else if(sums.charAt(result - 1) == '('){
+			}else if(sums.charAt(result - 1) == '(' | sums.charAt(result - 1) == '['){
 				a = result + 1;
 				loop = true;
 				if(Debug[5] == true) System.out.println("SymScan():Negative found at " + result + ", loop");
@@ -208,7 +243,7 @@ public class Caculator{
 			// Debug Settings End
 			sc1 = "0";
 			sc2 = 0;
-			mem = sc2 = SymScan(0, sums.length());
+			mem = sc2 = SymScan(0, Nsums.length());
 			if(Debug[4] == true)
 				System.out.println("main:" + num1() + ", " + num2());
 			System.out.println(Caculate());
